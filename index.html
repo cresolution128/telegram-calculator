@@ -21,10 +21,11 @@
 }
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent;
   scrollbar-width:thin;scrollbar-color:var(--line) transparent}
-::-webkit-scrollbar{width:9px;height:9px}
+::-webkit-scrollbar{width:12px;height:12px}
 ::-webkit-scrollbar-track{background:transparent}
-::-webkit-scrollbar-thumb{background:var(--line);border-radius:9px;border:3px solid transparent;background-clip:content-box}
+::-webkit-scrollbar-thumb{background:var(--line);border-radius:10px;border:3px solid transparent;background-clip:content-box;min-height:44px}
 ::-webkit-scrollbar-thumb:hover{background:var(--muted);background-clip:content-box}
+::-webkit-scrollbar-thumb:active{background:var(--accent);background-clip:content-box}
 ::-webkit-scrollbar-corner{background:transparent}
 html,body{margin:0;padding:0;overflow-x:hidden;max-width:100%}
 body{
@@ -33,6 +34,13 @@ body{
   padding:0 0 120px; overscroll-behavior-y:none; overflow-x:hidden;
 }
 .wrap{max-width:560px;margin:0 auto;padding:12px 14px 0}
+
+/* desktop (Telegram modal): keep the scrollbar clear of the window resize grip */
+body.deskscroll{height:100vh;height:100dvh;overflow:hidden;padding-bottom:0}
+body.deskscroll .wrap{height:100%;overflow-y:auto;overflow-x:hidden;
+  border-right:12px solid transparent;border-left:12px solid transparent;padding-bottom:28px}
+body.deskscroll .acts{max-width:584px}
+body.deskscroll:not(.tgapp) .wrap{padding-bottom:104px}  /* clear the fixed action bar */
 
 /* header */
 header{display:flex;align-items:center;gap:10px;padding:6px 2px 14px}
@@ -545,9 +553,16 @@ if (tg){
     tg.onEvent("themeChanged", function(){ location.reload(); });
     tg.MainButton.onClick(send);
     document.body.classList.add("tgapp");   // MainButton replaces the in-page bar
+    // desktop clients open the app in a resizable modal whose grip hugs the window
+    // edge; scroll an inset container there so the scrollbar stays grabbable.
+    var DESK = {tdesktop:1, macos:1, web:1, weba:1, webk:1};
+    if (DESK[tg.platform]) document.body.classList.add("deskscroll");
   }catch(e){}
-} else if (window.matchMedia && window.matchMedia("(prefers-color-scheme: light)").matches){
-  document.documentElement.setAttribute("data-theme","light");
+} else {
+  if (window.matchMedia && window.matchMedia("(prefers-color-scheme: light)").matches)
+    document.documentElement.setAttribute("data-theme","light");
+  if (window.matchMedia && window.matchMedia("(pointer: fine)").matches)
+    document.body.classList.add("deskscroll");
 }
 
 calc();
