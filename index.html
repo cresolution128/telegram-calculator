@@ -19,28 +19,39 @@
   --line:#dde5ee; --text:#0e1a26; --muted:#6b7d90;
   --sh:0 4px 18px rgba(16,38,64,.08);
 }
-*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
-html,body{margin:0;padding:0}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent;
+  scrollbar-width:thin;scrollbar-color:var(--line) transparent}
+::-webkit-scrollbar{width:9px;height:9px}
+::-webkit-scrollbar-track{background:transparent}
+::-webkit-scrollbar-thumb{background:var(--line);border-radius:9px;border:3px solid transparent;background-clip:content-box}
+::-webkit-scrollbar-thumb:hover{background:var(--muted);background-clip:content-box}
+::-webkit-scrollbar-corner{background:transparent}
+html,body{margin:0;padding:0;overflow-x:hidden;max-width:100%}
 body{
   background:var(--bg); color:var(--text);
   font:15px/1.45 -apple-system,BlinkMacSystemFont,"SF Pro Text","Segoe UI",Roboto,system-ui,sans-serif;
-  padding:0 0 120px; overscroll-behavior-y:none;
+  padding:0 0 120px; overscroll-behavior-y:none; overflow-x:hidden;
 }
 .wrap{max-width:560px;margin:0 auto;padding:12px 14px 0}
 
 /* header */
 header{display:flex;align-items:center;gap:10px;padding:6px 2px 14px}
 .logo{width:38px;height:38px;border-radius:12px;display:grid;place-items:center;
-  background:linear-gradient(140deg,var(--accent),#7b5cff);box-shadow:0 4px 14px rgba(46,166,255,.35);
-  font-size:19px;flex:none}
+  background:var(--accent);box-shadow:0 3px 10px rgba(46,166,255,.28);flex:none}
+.logo svg{width:20px;height:20px}
 .htxt h1{margin:0;font-size:17px;font-weight:700;letter-spacing:-.2px}
 .htxt p{margin:1px 0 0;font-size:12px;color:var(--muted)}
+.iconbtn{margin-left:auto;flex:none;width:38px;height:38px;border-radius:11px;background:var(--card);
+  border:1px solid var(--line);color:var(--muted);font-size:17px;cursor:pointer;transition:.15s}
+.iconbtn:active{transform:scale(.92);color:var(--accent)}
 
 /* cards */
 .card{background:var(--card);border:1px solid var(--line);border-radius:var(--r);padding:14px;margin-bottom:12px;box-shadow:var(--sh)}
 .card>h2{margin:0 0 12px;font-size:12px;letter-spacing:.8px;text-transform:uppercase;color:var(--muted);font-weight:700;
   display:flex;align-items:center;gap:7px}
-.card>h2 i{font-style:normal;font-size:14px}
+.ic{width:15px;height:15px;flex:none;stroke:currentColor;fill:none;stroke-width:1.7;
+  stroke-linecap:round;stroke-linejoin:round;vertical-align:-2px}
+.ic-l{width:17px;height:17px}
 
 /* fields */
 .f{margin-bottom:12px}
@@ -52,7 +63,8 @@ header{display:flex;align-items:center;gap:10px;padding:6px 2px 14px}
 .ip input{flex:1;min-width:0;background:none;border:0;outline:none;color:var(--text);
   font:600 16px/1 inherit;padding:13px 12px;letter-spacing:.2px}
 .ip .suf{padding:0 13px 0 4px;font-size:13px;color:var(--muted);font-weight:600;white-space:nowrap}
-.row{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.row{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:10px}
+.row>.f{min-width:0}
 
 /* segmented */
 .seg{display:flex;background:var(--card2);border:1px solid var(--line);border-radius:12px;padding:3px;gap:3px}
@@ -61,14 +73,17 @@ header{display:flex;align-items:center;gap:10px;padding:6px 2px 14px}
 .seg button.on{background:var(--accent);color:#fff;box-shadow:0 2px 8px rgba(46,166,255,.3)}
 
 /* slider */
-.sl{display:flex;align-items:center;gap:12px;margin-top:8px}
+.sl{display:flex;align-items:center;gap:12px;margin-top:8px;min-width:0}
+.sl input[type=range]{min-width:0}
 input[type=range]{-webkit-appearance:none;appearance:none;flex:1;height:4px;border-radius:4px;background:var(--line);outline:none}
 input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:22px;height:22px;border-radius:50%;
   background:var(--accent);border:3px solid var(--card);box-shadow:0 2px 8px rgba(0,0,0,.35);cursor:pointer}
 input[type=range]::-moz-range-thumb{width:18px;height:18px;border-radius:50%;background:var(--accent);border:3px solid var(--card);cursor:pointer}
-.pill{min-width:66px;text-align:center;background:var(--card2);border:1px solid var(--line);border-radius:10px;
-  padding:7px 4px;font:700 14px/1 inherit}
-.pill input{width:100%;background:none;border:0;outline:none;color:var(--text);font:700 14px/1 inherit;text-align:center}
+.pill{flex:0 0 auto;width:86px;display:flex;align-items:center;justify-content:center;gap:1px;
+  background:var(--card2);border:1px solid var(--line);border-radius:10px;padding:9px 6px;font:700 14px/1 inherit}
+.pill input{width:100%;min-width:0;background:none;border:0;outline:none;color:var(--text);
+  font:700 14px/1 inherit;text-align:right;padding:0}
+.pill span{color:var(--muted);flex:none}
 
 /* result */
 .hero{background:linear-gradient(150deg,var(--card2),var(--card));border:1px solid var(--line);
@@ -103,6 +118,8 @@ input[type=range]::-moz-range-thumb{width:18px;height:18px;border-radius:50%;bac
 .pos{color:var(--good)} .negc{color:var(--bad)}
 
 /* actions */
+body.tgapp .acts{display:none}
+body.tgapp{padding-bottom:24px}
 .acts{position:fixed;left:0;right:0;bottom:0;padding:12px 14px calc(12px + env(safe-area-inset-bottom));
   background:linear-gradient(to top,var(--bg) 60%,transparent);display:flex;gap:10px;max-width:560px;margin:0 auto}
 .btn{flex:1;border:0;border-radius:14px;padding:15px 10px;font:700 15px/1 inherit;cursor:pointer;transition:.15s}
@@ -117,18 +134,29 @@ input[type=range]::-moz-range-thumb{width:18px;height:18px;border-radius:50%;bac
 </style>
 </head>
 <body>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+ <symbol id="i-lot" viewBox="0 0 24 24"><path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z"/><path d="M14 3v5h5"/><path d="M9 13h6M9 17h4"/></symbol>
+ <symbol id="i-cost" viewBox="0 0 24 24"><path d="M3 8a2 2 0 0 1 2-2h13a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><path d="M3 9h14a2 2 0 0 1 2 2v2a2 2 0 0 1-2 2H3"/><circle cx="16.5" cy="12.5" r="1"/></symbol>
+ <symbol id="i-tax" viewBox="0 0 24 24"><path d="M3 10 12 4l9 6"/><path d="M5 10v8M9.5 10v8M14.5 10v8M19 10v8"/><path d="M3 20h18"/></symbol>
+ <symbol id="i-target" viewBox="0 0 24 24"><circle cx="12" cy="12" r="8"/><circle cx="12" cy="12" r="3.4"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3"/></symbol>
+ <symbol id="i-chart" viewBox="0 0 24 24"><path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/></symbol>
+ <symbol id="i-list" viewBox="0 0 24 24"><path d="M6 3h12a1 1 0 0 1 1 1v17l-2.5-1.6L14 21l-2-1.6L10 21l-2.5-1.6L5 21V4a1 1 0 0 1 1-1z"/><path d="M9 8h6M9 12h6"/></symbol>
+ <symbol id="i-reset" viewBox="0 0 24 24"><path d="M3 12a9 9 0 1 0 2.6-6.4"/><path d="M3 4v5h5"/></symbol>
+</svg>
 <div class="wrap">
   <header>
-    <div class="logo">📊</div>
+    <div class="logo"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.1"
+      stroke-linecap="round" stroke-linejoin="round"><path d="M5 19V11M12 19V5M19 19v-6"/></svg></div>
     <div class="htxt">
       <h1>Tender Calculator</h1>
       <p>Lot profitability &amp; break-even bid</p>
     </div>
+    <button class="iconbtn" id="btnReset2" title="Reset to defaults"><svg class="ic ic-l"><use href="#i-reset"/></svg></button>
   </header>
 
   <!-- LOT -->
   <div class="card">
-    <h2><i>📄</i><span>Lot details</span></h2>
+    <h2><svg class="ic"><use href="#i-lot"/></svg><span>Lot details</span></h2>
     <div class="f">
       <label>Starting lot price</label>
       <div class="ip"><input id="lot" inputmode="decimal" value="5 000 000"><span class="suf cur">KZT</span></div>
@@ -149,7 +177,7 @@ input[type=range]::-moz-range-thumb{width:18px;height:18px;border-radius:50%;bac
       <label>Price reduction — your bid discount</label>
       <div class="sl">
         <input type="range" id="discR" min="0" max="60" step="0.5" value="10">
-        <div class="pill"><input id="disc" inputmode="decimal" value="10">%</div>
+        <div class="pill"><input id="disc" inputmode="decimal" value="10"><span>%</span></div>
       </div>
       <div class="hint">Bid price: <b id="bidTxt">—</b></div>
     </div>
@@ -157,7 +185,7 @@ input[type=range]::-moz-range-thumb{width:18px;height:18px;border-radius:50%;bac
 
   <!-- COSTS -->
   <div class="card">
-    <h2><i>💰</i><span>Costs</span></h2>
+    <h2><svg class="ic"><use href="#i-cost"/></svg><span>Costs</span></h2>
     <div class="f">
       <label>Purchase price per unit</label>
       <div class="ip"><input id="unit" inputmode="decimal" value="32 000"><span class="suf cur">KZT</span></div>
@@ -180,14 +208,14 @@ input[type=range]::-moz-range-thumb{width:18px;height:18px;border-radius:50%;bac
       <label>Bank guarantee / fees, % of lot</label>
       <div class="sl">
         <input type="range" id="bankR" min="0" max="10" step="0.1" value="1">
-        <div class="pill"><input id="bank" inputmode="decimal" value="1">%</div>
+        <div class="pill"><input id="bank" inputmode="decimal" value="1"><span>%</span></div>
       </div>
     </div>
   </div>
 
   <!-- TAXES -->
   <div class="card">
-    <h2><i>🏛️</i><span>Taxes</span></h2>
+    <h2><svg class="ic"><use href="#i-tax"/></svg><span>Taxes</span></h2>
     <div class="f">
       <label>Tax regime</label>
       <div class="seg" id="segTax">
@@ -206,7 +234,7 @@ input[type=range]::-moz-range-thumb{width:18px;height:18px;border-radius:50%;bac
       <label>Bid security deposit, % of lot</label>
       <div class="sl">
         <input type="range" id="garR" min="0" max="10" step="0.5" value="3">
-        <div class="pill"><input id="gar" inputmode="decimal" value="3">%</div>
+        <div class="pill"><input id="gar" inputmode="decimal" value="3"><span>%</span></div>
       </div>
     </div>
   </div>
@@ -224,7 +252,7 @@ input[type=range]::-moz-range-thumb{width:18px;height:18px;border-radius:50%;bac
   </div>
 
   <div class="card">
-    <h2><i>🎯</i><span>Break-even</span></h2>
+    <h2><svg class="ic"><use href="#i-target"/></svg><span>Break-even</span></h2>
     <div class="tb">
       <div class="tr"><span>Max price reduction</span><b id="eDisc" class="pos">—</b></div>
       <div class="tr"><span>Minimum bid price</span><b id="ePrice">—</b></div>
@@ -234,7 +262,7 @@ input[type=range]::-moz-range-thumb{width:18px;height:18px;border-radius:50%;bac
   </div>
 
   <div class="card">
-    <h2><i>📈</i><span>Bid structure</span></h2>
+    <h2><svg class="ic"><use href="#i-chart"/></svg><span>Bid structure</span></h2>
     <div class="bar" id="bar">
       <i id="b1" style="background:#2ea6ff"></i><i id="b2" style="background:#7b5cff"></i>
       <i id="b3" style="background:#ffb020"></i><i id="b4" style="background:#31d0aa"></i>
@@ -248,7 +276,7 @@ input[type=range]::-moz-range-thumb{width:18px;height:18px;border-radius:50%;bac
   </div>
 
   <div class="card">
-    <h2><i>🧾</i><span>Breakdown</span></h2>
+    <h2><svg class="ic"><use href="#i-list"/></svg><span>Breakdown</span></h2>
     <div class="tb" id="det"></div>
   </div>
 
@@ -256,7 +284,7 @@ input[type=range]::-moz-range-thumb{width:18px;height:18px;border-radius:50%;bac
 </div>
 
 <div class="acts">
-  <button class="btn s" id="btnReset" title="Reset">↺</button>
+  <button class="btn s" id="btnReset" title="Reset"><svg class="ic ic-l"><use href="#i-reset"/></svg></button>
   <button class="btn p" id="btnSend">Send calculation to chat</button>
 </div>
 <div class="toast" id="toast"></div>
@@ -415,7 +443,7 @@ function calc(){
 
   /* telegram main button */
   if (tg && tg.MainButton){
-    tg.MainButton.setText((r.net>=0 ? "✅ " : "⚠️ ") + T.d_net + ": " + money(r.net));
+    tg.MainButton.setText(T.d_net + ": " + money(r.net));
     tg.MainButton.color = r.net>=0 ? "#31d0aa" : "#ff5f6d";
     tg.MainButton.textColor = "#0b1219";
     if (!tg.MainButton.isVisible) tg.MainButton.show();
@@ -425,7 +453,7 @@ function calc(){
 function summary(){
   var d = num($("disc").value), r = model(d), be = breakEven();
   return [
-    "📊 " + T.title,
+    T.title,
     "———————————",
     T.l_sum + ": " + money(r.lot),
     T.l_disc + ": " + d.toFixed(1) + "%",
@@ -480,11 +508,13 @@ pair("disc","discR"); pair("bank","bankR"); pair("gar","garR");
 
 /* actions */
 var DEFAULTS = {lot:"5 000 000",qty:"100",unit:"32 000",deliv:"150 000",extra:"80 000",disc:"10",bank:"1",gar:"3"};
-$("btnReset").addEventListener("click", function(){
+function reset(){
   for (var k in DEFAULTS){ $(k).value = DEFAULTS[k]; }
   $("discR").value = 10; $("bankR").value = 1; $("garR").value = 3;
   haptic("medium"); calc(); toast(T.t_reset);
-});
+}
+$("btnReset").addEventListener("click", reset);
+$("btnReset2").addEventListener("click", reset);
 
 function send(){
   var txt = summary();
@@ -514,6 +544,7 @@ if (tg){
     if (tg.setHeaderColor)    tg.setHeaderColor(p.bg_color || "#0f1620");
     tg.onEvent("themeChanged", function(){ location.reload(); });
     tg.MainButton.onClick(send);
+    document.body.classList.add("tgapp");   // MainButton replaces the in-page bar
   }catch(e){}
 } else if (window.matchMedia && window.matchMedia("(prefers-color-scheme: light)").matches){
   document.documentElement.setAttribute("data-theme","light");
