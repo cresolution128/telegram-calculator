@@ -1,0 +1,526 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+<meta name="theme-color" content="#0f1620">
+<title>Tender Calculator</title>
+<script src="https://telegram.org/js/telegram-web-app.js"></script>
+<style>
+:root{
+  --bg:#0f1620; --bg2:#151f2b; --card:#18232f; --card2:#1e2b3a;
+  --line:#26374a; --text:#eaf2fb; --muted:#8ea3b8;
+  --accent:#2ea6ff; --accent2:#1b8ae0;
+  --good:#31d0aa; --bad:#ff5f6d; --warn:#ffb020;
+  --r:16px; --sh:0 6px 24px rgba(0,0,0,.28);
+}
+:root[data-theme="light"]{
+  --bg:#f2f5f9; --bg2:#e9eef5; --card:#ffffff; --card2:#f5f8fc;
+  --line:#dde5ee; --text:#0e1a26; --muted:#6b7d90;
+  --sh:0 4px 18px rgba(16,38,64,.08);
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;padding:0}
+body{
+  background:var(--bg); color:var(--text);
+  font:15px/1.45 -apple-system,BlinkMacSystemFont,"SF Pro Text","Segoe UI",Roboto,system-ui,sans-serif;
+  padding:0 0 120px; overscroll-behavior-y:none;
+}
+.wrap{max-width:560px;margin:0 auto;padding:12px 14px 0}
+
+/* header */
+header{display:flex;align-items:center;gap:10px;padding:6px 2px 14px}
+.logo{width:38px;height:38px;border-radius:12px;display:grid;place-items:center;
+  background:linear-gradient(140deg,var(--accent),#7b5cff);box-shadow:0 4px 14px rgba(46,166,255,.35);
+  font-size:19px;flex:none}
+.htxt h1{margin:0;font-size:17px;font-weight:700;letter-spacing:-.2px}
+.htxt p{margin:1px 0 0;font-size:12px;color:var(--muted)}
+
+/* cards */
+.card{background:var(--card);border:1px solid var(--line);border-radius:var(--r);padding:14px;margin-bottom:12px;box-shadow:var(--sh)}
+.card>h2{margin:0 0 12px;font-size:12px;letter-spacing:.8px;text-transform:uppercase;color:var(--muted);font-weight:700;
+  display:flex;align-items:center;gap:7px}
+.card>h2 i{font-style:normal;font-size:14px}
+
+/* fields */
+.f{margin-bottom:12px}
+.f:last-child{margin-bottom:0}
+.f label{display:block;font-size:13px;color:var(--muted);margin-bottom:6px}
+.ip{position:relative;display:flex;align-items:center;background:var(--card2);border:1px solid var(--line);
+  border-radius:12px;transition:border-color .15s,box-shadow .15s}
+.ip:focus-within{border-color:var(--accent);box-shadow:0 0 0 3px rgba(46,166,255,.15)}
+.ip input{flex:1;min-width:0;background:none;border:0;outline:none;color:var(--text);
+  font:600 16px/1 inherit;padding:13px 12px;letter-spacing:.2px}
+.ip .suf{padding:0 13px 0 4px;font-size:13px;color:var(--muted);font-weight:600;white-space:nowrap}
+.row{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+
+/* segmented */
+.seg{display:flex;background:var(--card2);border:1px solid var(--line);border-radius:12px;padding:3px;gap:3px}
+.seg button{flex:1;background:none;border:0;border-radius:9px;color:var(--muted);
+  font:600 13px/1 inherit;padding:10px 4px;cursor:pointer;transition:.15s;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.seg button.on{background:var(--accent);color:#fff;box-shadow:0 2px 8px rgba(46,166,255,.3)}
+
+/* slider */
+.sl{display:flex;align-items:center;gap:12px;margin-top:8px}
+input[type=range]{-webkit-appearance:none;appearance:none;flex:1;height:4px;border-radius:4px;background:var(--line);outline:none}
+input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:22px;height:22px;border-radius:50%;
+  background:var(--accent);border:3px solid var(--card);box-shadow:0 2px 8px rgba(0,0,0,.35);cursor:pointer}
+input[type=range]::-moz-range-thumb{width:18px;height:18px;border-radius:50%;background:var(--accent);border:3px solid var(--card);cursor:pointer}
+.pill{min-width:66px;text-align:center;background:var(--card2);border:1px solid var(--line);border-radius:10px;
+  padding:7px 4px;font:700 14px/1 inherit}
+.pill input{width:100%;background:none;border:0;outline:none;color:var(--text);font:700 14px/1 inherit;text-align:center}
+
+/* result */
+.hero{background:linear-gradient(150deg,var(--card2),var(--card));border:1px solid var(--line);
+  border-radius:var(--r);padding:16px;box-shadow:var(--sh);margin-bottom:12px;position:relative;overflow:hidden}
+.hero::after{content:"";position:absolute;inset:0 0 auto 0;height:3px;background:var(--good);opacity:.9;transition:.3s}
+.hero.neg::after{background:var(--bad)}
+.hero .lb{font-size:12px;color:var(--muted);text-transform:uppercase;letter-spacing:.7px;font-weight:700}
+.hero .big{font:800 30px/1.1 inherit;letter-spacing:-1px;margin:8px 0 2px;color:var(--good);
+  font-variant-numeric:tabular-nums;transition:color .2s}
+.hero.neg .big{color:var(--bad)}
+.hero .sub{font-size:13px;color:var(--muted)}
+.chips{display:flex;gap:8px;margin-top:14px;flex-wrap:wrap}
+.chip{flex:1;min-width:88px;background:var(--card2);border:1px solid var(--line);border-radius:12px;padding:9px 10px}
+.chip b{display:block;font:700 16px/1.2 inherit;font-variant-numeric:tabular-nums}
+.chip span{font-size:11px;color:var(--muted)}
+
+/* bar */
+.bar{display:flex;height:11px;border-radius:7px;overflow:hidden;background:var(--card2);margin:14px 0 10px;gap:2px}
+.bar i{display:block;transition:width .35s cubic-bezier(.3,1,.4,1)}
+.leg{display:flex;flex-wrap:wrap;gap:6px 14px}
+.leg div{display:flex;align-items:center;gap:6px;font-size:12px;color:var(--muted)}
+.leg em{width:9px;height:9px;border-radius:3px;flex:none;font-style:normal}
+.leg b{color:var(--text);font-weight:600;font-variant-numeric:tabular-nums}
+
+/* table */
+.tb{display:flex;flex-direction:column;gap:1px;background:var(--line);border-radius:12px;overflow:hidden;border:1px solid var(--line)}
+.tb .tr{display:flex;justify-content:space-between;gap:12px;padding:11px 12px;background:var(--card);font-size:14px}
+.tb .tr span{color:var(--muted)}
+.tb .tr b{font-weight:600;font-variant-numeric:tabular-nums;text-align:right}
+.tb .tr.tot{background:var(--card2)}
+.tb .tr.tot b,.tb .tr.tot span{font-weight:700;color:var(--text)}
+.pos{color:var(--good)} .negc{color:var(--bad)}
+
+/* actions */
+.acts{position:fixed;left:0;right:0;bottom:0;padding:12px 14px calc(12px + env(safe-area-inset-bottom));
+  background:linear-gradient(to top,var(--bg) 60%,transparent);display:flex;gap:10px;max-width:560px;margin:0 auto}
+.btn{flex:1;border:0;border-radius:14px;padding:15px 10px;font:700 15px/1 inherit;cursor:pointer;transition:.15s}
+.btn.p{background:var(--accent);color:#fff;box-shadow:0 6px 18px rgba(46,166,255,.35)}
+.btn.s{background:var(--card);color:var(--text);border:1px solid var(--line);flex:0 0 52px;font-size:18px}
+.btn:active{transform:scale(.97)}
+.hint{font-size:12px;color:var(--muted);margin-top:8px;line-height:1.4}
+.toast{position:fixed;left:50%;bottom:96px;transform:translate(-50%,14px);background:#0b1219ee;color:#fff;
+  padding:11px 18px;border-radius:12px;font-size:13px;opacity:0;pointer-events:none;transition:.25s;z-index:9;border:1px solid #2a3a4d}
+.toast.on{opacity:1;transform:translate(-50%,0)}
+.foot{text-align:center;font-size:11px;color:var(--muted);padding:4px 0 8px;opacity:.7}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div class="logo">📊</div>
+    <div class="htxt">
+      <h1>Tender Calculator</h1>
+      <p>Lot profitability &amp; break-even bid</p>
+    </div>
+  </header>
+
+  <!-- LOT -->
+  <div class="card">
+    <h2><i>📄</i><span>Lot details</span></h2>
+    <div class="f">
+      <label>Starting lot price</label>
+      <div class="ip"><input id="lot" inputmode="decimal" value="5 000 000"><span class="suf cur">KZT</span></div>
+    </div>
+    <div class="row">
+      <div class="f">
+        <label>Quantity, units</label>
+        <div class="ip"><input id="qty" inputmode="decimal" value="100"></div>
+      </div>
+      <div class="f">
+        <label>Currency</label>
+        <div class="seg" id="segCur">
+          <button data-v="KZT" class="on">KZT</button><button data-v="KGS">KGS</button><button data-v="RUB">RUB</button>
+        </div>
+      </div>
+    </div>
+    <div class="f">
+      <label>Price reduction — your bid discount</label>
+      <div class="sl">
+        <input type="range" id="discR" min="0" max="60" step="0.5" value="10">
+        <div class="pill"><input id="disc" inputmode="decimal" value="10">%</div>
+      </div>
+      <div class="hint">Bid price: <b id="bidTxt">—</b></div>
+    </div>
+  </div>
+
+  <!-- COSTS -->
+  <div class="card">
+    <h2><i>💰</i><span>Costs</span></h2>
+    <div class="f">
+      <label>Purchase price per unit</label>
+      <div class="ip"><input id="unit" inputmode="decimal" value="32 000"><span class="suf cur">KZT</span></div>
+      <div class="seg" style="margin-top:8px" id="segSup">
+        <button data-v="1" class="on">Supplier with VAT</button>
+        <button data-v="0">Without VAT</button>
+      </div>
+    </div>
+    <div class="row">
+      <div class="f">
+        <label>Logistics / delivery</label>
+        <div class="ip"><input id="deliv" inputmode="decimal" value="150 000"><span class="suf cur">KZT</span></div>
+      </div>
+      <div class="f">
+        <label>Other expenses</label>
+        <div class="ip"><input id="extra" inputmode="decimal" value="80 000"><span class="suf cur">KZT</span></div>
+      </div>
+    </div>
+    <div class="f">
+      <label>Bank guarantee / fees, % of lot</label>
+      <div class="sl">
+        <input type="range" id="bankR" min="0" max="10" step="0.1" value="1">
+        <div class="pill"><input id="bank" inputmode="decimal" value="1">%</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- TAXES -->
+  <div class="card">
+    <h2><i>🏛️</i><span>Taxes</span></h2>
+    <div class="f">
+      <label>Tax regime</label>
+      <div class="seg" id="segTax">
+        <button data-v="simp" class="on">Simplified 3%</button>
+        <button data-v="gen">General 20%</button>
+      </div>
+    </div>
+    <div class="f">
+      <label>VAT registered</label>
+      <div class="seg" id="segVat">
+        <button data-v="0" class="on">No</button>
+        <button data-v="1">Yes, 12%</button>
+      </div>
+    </div>
+    <div class="f">
+      <label>Bid security deposit, % of lot</label>
+      <div class="sl">
+        <input type="range" id="garR" min="0" max="10" step="0.5" value="3">
+        <div class="pill"><input id="gar" inputmode="decimal" value="3">%</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- RESULT -->
+  <div class="hero" id="hero">
+    <div class="lb">Net profit</div>
+    <div class="big" id="rNet">—</div>
+    <div class="sub">Margin <b id="rMarg">—</b> · ROI <b id="rRoi">—</b></div>
+    <div class="chips">
+      <div class="chip"><b id="rBid">—</b><span>Bid price</span></div>
+      <div class="chip"><b id="rUnit">—</b><span>Price per unit</span></div>
+      <div class="chip"><b id="rGar">—</b><span>Deposit</span></div>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2><i>🎯</i><span>Break-even</span></h2>
+    <div class="tb">
+      <div class="tr"><span>Max price reduction</span><b id="eDisc" class="pos">—</b></div>
+      <div class="tr"><span>Minimum bid price</span><b id="ePrice">—</b></div>
+      <div class="tr"><span>Headroom left</span><b id="eRoom">—</b></div>
+    </div>
+    <div class="hint">Bidding below this price makes the tender unprofitable.</div>
+  </div>
+
+  <div class="card">
+    <h2><i>📈</i><span>Bid structure</span></h2>
+    <div class="bar" id="bar">
+      <i id="b1" style="background:#2ea6ff"></i><i id="b2" style="background:#7b5cff"></i>
+      <i id="b3" style="background:#ffb020"></i><i id="b4" style="background:#31d0aa"></i>
+    </div>
+    <div class="leg">
+      <div><em style="background:#2ea6ff"></em><span>Purchase</span> <b id="g1">—</b></div>
+      <div><em style="background:#7b5cff"></em><span>Expenses</span> <b id="g2">—</b></div>
+      <div><em style="background:#ffb020"></em><span>Taxes</span> <b id="g3">—</b></div>
+      <div><em style="background:#31d0aa"></em><span>Profit</span> <b id="g4">—</b></div>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2><i>🧾</i><span>Breakdown</span></h2>
+    <div class="tb" id="det"></div>
+  </div>
+
+  <div class="foot">TenderCalc · WebApp</div>
+</div>
+
+<div class="acts">
+  <button class="btn s" id="btnReset" title="Reset">↺</button>
+  <button class="btn p" id="btnSend">Send calculation to chat</button>
+</div>
+<div class="toast" id="toast"></div>
+
+<script>
+(function(){
+"use strict";
+var tg = window.Telegram && window.Telegram.WebApp ? window.Telegram.WebApp : null;
+
+/* labels used by generated markup and the chat summary */
+var T = {
+  title:"Tender Calculator",
+  d_bid:"Bid price", d_vatout:"incl. output VAT", d_rev:"Revenue excl. VAT",
+  d_buy:"Goods purchase", d_vatin:"Input VAT credit", d_del:"Logistics", d_ext:"Other expenses",
+  d_bank:"Bank fees", d_cost:"Total costs", d_gross:"Profit before tax",
+  d_tax:"Income tax", d_vatpay:"VAT payable", d_net:"Net profit", d_perunit:"Profit per unit",
+  e_disc:"Max price reduction", e_price:"Minimum bid price",
+  l_sum:"Starting lot price", l_disc:"Price reduction", r_gar:"Bid security deposit",
+  t_copy:"Copied to clipboard", t_sent:"Sent to chat", t_reset:"Reset to defaults", loss:"Loss"
+};
+
+/* ---------- helpers ---------- */
+var CUR = "KZT";
+function num(v){ v=String(v).replace(/[^0-9.,-]/g,"").replace(/\s/g,"").replace(",", "."); var f=parseFloat(v); return isFinite(f)?f:0; }
+function fmt(v,d){ d=d||0;
+  var neg = v<0; v=Math.abs(v);
+  var s = v.toFixed(d).replace(/\B(?=(\d{3})+(?!\d))/g," ");
+  return (neg?"−":"")+s; }
+function money(v){ return fmt(Math.round(v))+" "+CUR; }
+function pct(v){ return (v>=0?"":"−")+Math.abs(v).toFixed(1)+"%"; }
+function $(id){ return document.getElementById(id); }
+function haptic(t){ try{ tg && tg.HapticFeedback && tg.HapticFeedback.impactOccurred(t||"light"); }catch(e){} }
+
+var toastT;
+function toast(msg){ var t=$("toast"); t.textContent=msg; t.classList.add("on");
+  clearTimeout(toastT); toastT=setTimeout(function(){t.classList.remove("on");},1800); }
+
+/* live thousand separators on money inputs */
+function pretty(el){
+  var raw = num(el.value);
+  var pos = el.selectionStart, before = el.value.length;
+  el.value = raw ? fmt(raw, (String(raw).split(".")[1]||"").length>0 ? 2 : 0) : "";
+  var after = el.value.length;
+  try{ el.setSelectionRange(Math.max(0,pos+after-before), Math.max(0,pos+after-before)); }catch(e){}
+}
+
+/* ---------- state ---------- */
+var S = { supVat:1, tax:"simp", vat:0 };
+
+/* ---------- core math ---------- */
+function model(discount){
+  var lot   = num($("lot").value);
+  var qty   = Math.max(0, num($("qty").value));
+  var unit  = num($("unit").value);
+  var deliv = num($("deliv").value);
+  var extra = num($("extra").value);
+  var bankP = num($("bank").value);
+  var garP  = num($("gar").value);
+  var VAT   = 12;
+
+  var bid = lot * (1 - discount/100);
+  var revNet = S.vat ? bid/(1+VAT/100) : bid;
+  var vatOut = bid - revNet;
+
+  var buyGross = unit * qty;
+  var vatIn = (S.vat && S.supVat) ? buyGross*VAT/(100+VAT) : 0;
+  var buyNet = buyGross - vatIn;
+
+  var bankFee = lot * bankP/100;
+  var otherCosts = deliv + extra + bankFee;
+  var costs = buyNet + otherCosts;
+
+  var gross = revNet - costs;
+  var tax = S.tax === "simp" ? revNet*0.03 : Math.max(0, gross)*0.20;
+  var net = gross - tax;
+
+  return { lot:lot, qty:qty, bid:bid, revNet:revNet, vatOut:vatOut, vatIn:vatIn,
+    buyGross:buyGross, buyNet:buyNet, deliv:deliv, extra:extra, bankFee:bankFee,
+    otherCosts:otherCosts, costs:costs, gross:gross, tax:tax, net:net,
+    vatPay:Math.max(0, vatOut - vatIn), gar: lot*garP/100,
+    margin: bid>0 ? net/bid*100 : 0, roi: costs>0 ? net/costs*100 : 0 };
+}
+
+/* break-even discount via bisection */
+function breakEven(){
+  var lo=0, hi=99, i;
+  if (model(0).net <= 0) return null;
+  for (i=0;i<60;i++){ var m=(lo+hi)/2; if (model(m).net > 0) lo=m; else hi=m; }
+  return lo;
+}
+
+/* ---------- render ---------- */
+function calc(){
+  var d = num($("disc").value);
+  var r = model(d);
+
+  $("bidTxt").textContent = money(r.bid);
+  $("rNet").textContent = money(r.net);
+  $("rMarg").textContent = pct(r.margin);
+  $("rRoi").textContent = pct(r.roi);
+  $("rBid").textContent = money(r.bid);
+  $("rUnit").textContent = r.qty>0 ? money(r.bid/r.qty) : "—";
+  $("rGar").textContent = money(r.gar);
+  $("hero").classList.toggle("neg", r.net < 0);
+
+  /* break-even */
+  var be = breakEven();
+  if (be === null){
+    $("eDisc").textContent = "0%"; $("eDisc").className = "negc";
+    $("ePrice").textContent = money(r.lot);
+    $("eRoom").textContent = T.loss;
+    $("eRoom").className = "negc";
+  } else {
+    $("eDisc").textContent = be.toFixed(1)+"%"; $("eDisc").className = "pos";
+    $("ePrice").textContent = money(r.lot*(1-be/100));
+    var room = be - d;
+    $("eRoom").textContent = (room>=0?"+":"−")+Math.abs(room).toFixed(1)+" pp";
+    $("eRoom").className = room>=0 ? "pos" : "negc";
+  }
+
+  /* bid structure bar */
+  var parts = [ Math.max(0,r.buyNet), Math.max(0,r.otherCosts),
+                Math.max(0,r.tax + r.vatPay), Math.max(0,r.net) ];
+  var sum = parts[0]+parts[1]+parts[2]+parts[3] || 1;
+  var ids=["b1","b2","b3","b4"], gs=["g1","g2","g3","g4"];
+  for (var i=0;i<4;i++){
+    var share = parts[i]/sum*100;
+    $(ids[i]).style.width = share.toFixed(2)+"%";
+    $(gs[i]).textContent = share.toFixed(0)+"%";
+  }
+
+  /* breakdown table */
+  var rows = [
+    [T.d_bid, money(r.bid), ""],
+    S.vat ? [T.d_vatout, "−"+money(r.vatOut), "negc"] : null,
+    S.vat ? [T.d_rev, money(r.revNet), ""] : null,
+    [T.d_buy, "−"+money(r.buyNet), "negc"],
+    (r.vatIn>0) ? [T.d_vatin, "+"+money(r.vatIn), "pos"] : null,
+    [T.d_del, "−"+money(r.deliv), "negc"],
+    [T.d_ext, "−"+money(r.extra), "negc"],
+    [T.d_bank, "−"+money(r.bankFee), "negc"],
+    ["__tot", T.d_cost, "−"+money(r.costs)],
+    [T.d_gross, money(r.gross), r.gross>=0?"pos":"negc"],
+    [T.d_tax, "−"+money(r.tax), "negc"],
+    S.vat ? [T.d_vatpay, money(r.vatPay), "negc"] : null,
+    ["__tot", T.d_net, money(r.net)],
+    [T.d_perunit, r.qty>0 ? money(r.net/r.qty) : "—", r.net>=0?"pos":"negc"]
+  ];
+  var html = "";
+  for (var j=0;j<rows.length;j++){
+    var row = rows[j]; if (!row) continue;
+    if (row[0]==="__tot") html += '<div class="tr tot"><span>'+row[1]+'</span><b>'+row[2]+'</b></div>';
+    else html += '<div class="tr"><span>'+row[0]+'</span><b class="'+(row[2]||"")+'">'+row[1]+'</b></div>';
+  }
+  $("det").innerHTML = html;
+
+  /* telegram main button */
+  if (tg && tg.MainButton){
+    tg.MainButton.setText((r.net>=0 ? "✅ " : "⚠️ ") + T.d_net + ": " + money(r.net));
+    tg.MainButton.color = r.net>=0 ? "#31d0aa" : "#ff5f6d";
+    tg.MainButton.textColor = "#0b1219";
+    if (!tg.MainButton.isVisible) tg.MainButton.show();
+  }
+}
+
+function summary(){
+  var d = num($("disc").value), r = model(d), be = breakEven();
+  return [
+    "📊 " + T.title,
+    "———————————",
+    T.l_sum + ": " + money(r.lot),
+    T.l_disc + ": " + d.toFixed(1) + "%",
+    T.d_bid + ": " + money(r.bid),
+    T.d_cost + ": " + money(r.costs),
+    "Taxes: " + money(r.tax + r.vatPay),
+    T.d_net + ": " + money(r.net) + "  (" + pct(r.margin) + ")",
+    "ROI: " + pct(r.roi),
+    T.e_disc + ": " + (be===null ? "—" : be.toFixed(1)+"%"),
+    T.e_price + ": " + (be===null ? "—" : money(r.lot*(1-be/100))),
+    T.r_gar + ": " + money(r.gar)
+  ].join("\n");
+}
+
+/* ---------- wiring ---------- */
+function bindSeg(id, fn){
+  var box = $(id);
+  box.addEventListener("click", function(e){
+    var b = e.target.closest("button"); if (!b) return;
+    var kids = box.querySelectorAll("button");
+    for (var i=0;i<kids.length;i++) kids[i].classList.remove("on");
+    b.classList.add("on"); haptic("light"); fn(b.getAttribute("data-v")); calc();
+  });
+}
+bindSeg("segSup", function(v){ S.supVat = +v; });
+bindSeg("segTax", function(v){ S.tax = v; });
+bindSeg("segVat", function(v){ S.vat = +v; });
+bindSeg("segCur", function(v){ CUR = v;
+  var s = document.querySelectorAll(".suf.cur");
+  for (var i=0;i<s.length;i++) s[i].textContent = v; });
+
+/* money inputs */
+["lot","qty","unit","deliv","extra"].forEach(function(id){
+  var el = $(id);
+  el.addEventListener("input", function(){ pretty(el); calc(); });
+  el.addEventListener("focus", function(){ el.select(); });
+});
+
+/* slider <-> number pairs */
+function pair(numId, rangeId){
+  var n = $(numId), rg = $(rangeId);
+  rg.addEventListener("input", function(){ n.value = rg.value; calc(); });
+  rg.addEventListener("change", function(){ haptic("soft"); });
+  n.addEventListener("input", function(){
+    var v = num(n.value);
+    rg.value = Math.min(+rg.max, Math.max(+rg.min, v));
+    calc();
+  });
+  n.addEventListener("focus", function(){ n.select(); });
+}
+pair("disc","discR"); pair("bank","bankR"); pair("gar","garR");
+
+/* actions */
+var DEFAULTS = {lot:"5 000 000",qty:"100",unit:"32 000",deliv:"150 000",extra:"80 000",disc:"10",bank:"1",gar:"3"};
+$("btnReset").addEventListener("click", function(){
+  for (var k in DEFAULTS){ $(k).value = DEFAULTS[k]; }
+  $("discR").value = 10; $("bankR").value = 1; $("garR").value = 3;
+  haptic("medium"); calc(); toast(T.t_reset);
+});
+
+function send(){
+  var txt = summary();
+  if (tg && tg.initData){
+    try { tg.sendData(txt); toast(T.t_sent); return; } catch(e){}
+  }
+  if (navigator.clipboard) navigator.clipboard.writeText(txt).then(function(){ toast(T.t_copy); },
+    function(){ toast(T.t_copy); });
+  else toast(T.t_copy);
+}
+$("btnSend").addEventListener("click", function(){ haptic("medium"); send(); });
+
+/* ---------- telegram init ---------- */
+if (tg){
+  try{
+    tg.ready(); tg.expand();
+    if (tg.enableClosingConfirmation) tg.enableClosingConfirmation();
+    var isLight = (tg.colorScheme === "light");
+    document.documentElement.setAttribute("data-theme", isLight ? "light" : "dark");
+    var p = tg.themeParams || {};
+    var root = document.documentElement.style;
+    if (p.bg_color)           root.setProperty("--bg", p.bg_color);
+    if (p.secondary_bg_color) root.setProperty("--card", p.secondary_bg_color);
+    if (p.text_color)         root.setProperty("--text", p.text_color);
+    if (p.hint_color)         root.setProperty("--muted", p.hint_color);
+    if (p.button_color)       root.setProperty("--accent", p.button_color);
+    if (tg.setHeaderColor)    tg.setHeaderColor(p.bg_color || "#0f1620");
+    tg.onEvent("themeChanged", function(){ location.reload(); });
+    tg.MainButton.onClick(send);
+  }catch(e){}
+} else if (window.matchMedia && window.matchMedia("(prefers-color-scheme: light)").matches){
+  document.documentElement.setAttribute("data-theme","light");
+}
+
+calc();
+})();
+</script>
+</body>
+</html>
