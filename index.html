@@ -535,6 +535,38 @@ function send(){
 }
 $("btnSend").addEventListener("click", function(){ haptic("medium"); send(); });
 
+/* In desktop mode the document itself does not scroll, and the Telegram modal
+   consumes wheel events that no scrollable document claims. Drive the inner
+   container directly so the wheel and keyboard work as usual. */
+(function(){
+  var wrap = document.querySelector(".wrap");
+  function on(){ return document.body.classList.contains("deskscroll"); }
+
+  window.addEventListener("wheel", function(e){
+    if (!on()) return;
+    var d = e.deltaY;
+    if (e.deltaMode === 1) d *= 16;                 // lines -> px
+    else if (e.deltaMode === 2) d *= wrap.clientHeight;  // pages -> px
+    var before = wrap.scrollTop;
+    wrap.scrollTop = before + d;
+    if (wrap.scrollTop !== before) e.preventDefault();
+  }, {passive:false});
+
+  window.addEventListener("keydown", function(e){
+    if (!on()) return;
+    var t = e.target;
+    if (t && (t.tagName === "INPUT" || t.isContentEditable)) return;
+    var h = wrap.clientHeight, step = null;
+    if (e.key === "PageDown" || (e.key === " " && !e.shiftKey)) step = h*0.9;
+    else if (e.key === "PageUp" || (e.key === " " && e.shiftKey)) step = -h*0.9;
+    else if (e.key === "ArrowDown") step = 64;
+    else if (e.key === "ArrowUp") step = -64;
+    else if (e.key === "Home") step = -wrap.scrollHeight;
+    else if (e.key === "End") step = wrap.scrollHeight;
+    if (step !== null){ wrap.scrollTop += step; e.preventDefault(); }
+  });
+})();
+
 /* ---------- telegram init ---------- */
 if (tg){
   try{
